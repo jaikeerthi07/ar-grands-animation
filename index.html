@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AR GRANDS Experience</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         body,
         html {
@@ -31,41 +31,84 @@
 
         #interaction-overlay {
             position: absolute;
-            bottom: 2rem;
+            top: 0;
             left: 0;
             width: 100%;
-            text-align: center;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
             z-index: 10;
-            color: rgba(255, 255, 255, 0.6);
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.95);
             font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            pointer-events: none;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            animation: pulse 2s infinite;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            transition: opacity 0.5s ease;
         }
 
-        @keyframes pulse {
+        #interaction-overlay h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            animation: pulse-text 2s infinite;
+        }
+
+        #interaction-overlay p {
+            font-size: 1rem;
+            font-weight: 400;
+            opacity: 0.8;
+            letter-spacing: 1px;
+        }
+
+        @keyframes pulse-text {
             0% {
-                opacity: 0.4;
+                transform: scale(1);
+                opacity: 0.8;
             }
 
             50% {
+                transform: scale(1.05);
                 opacity: 1;
             }
 
             100% {
-                opacity: 0.4;
+                transform: scale(1);
+                opacity: 0.8;
             }
+        }
+
+        .play-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1.5rem;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.9;
         }
     </style>
 </head>
 
 <body>
-    <video id="bg-video" autoplay muted playsinline>
+    <video id="bg-video" autoplay muted playsinline webkit-playsinline preload="auto">
         <source src="3d model animation.mp4" type="video/mp4">
     </video>
-    <div id="interaction-overlay">Tap anywhere for sound</div>
+
+    <div id="interaction-overlay">
+        <svg class="play-icon" viewBox="0 0 24 24">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <h1>TAP TO START</h1>
+        <p>Experience the 3D Animation & Audio</p>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -73,11 +116,11 @@
             const overlay = document.getElementById('interaction-overlay');
             const mapUrl = "https://maps.google.com/maps?q=AR%20GRANDS%20No%205C/1,%20Sidco%20Main%20Rd,%20near%20TNEB,%20Kodungaiyur%20(East),%20Vivekananda%20Nagar,%20Chennai%20%E2%80%93%20600118";
 
-            // Ensure video attempts to play immediately
+            // If the video somehow plays natively silently in the background, keep overlay until user taps.
             let playPromise = video.play();
             if (playPromise !== undefined) {
                 playPromise.catch(e => {
-                    console.log("Autoplay blocked initially", e);
+                    console.log("Autoplay strictly blocked.", e);
                 });
             }
 
@@ -86,20 +129,25 @@
                 window.location.href = mapUrl;
             });
 
-            // Unmute instantly upon any touch
-            const unmuteVideo = () => {
+            // Master interaction handler
+            const startExperience = () => {
+                // Instantly unleash video & audio
                 video.muted = false;
+                video.currentTime = 0; // Restart from frame 0 to guarantee they don't miss anything!
                 video.play();
-                overlay.style.display = 'none'; // Hide the helper text
+
+                // Remove overlay
+                overlay.style.opacity = '0';
+                setTimeout(() => { overlay.style.display = 'none'; }, 500);
 
                 // Cleanup listeners
-                document.removeEventListener('click', unmuteVideo);
-                document.removeEventListener('touchstart', unmuteVideo);
+                document.removeEventListener('click', startExperience);
+                document.removeEventListener('touchstart', startExperience);
             };
 
-            // Listen for user interaction to enable audio
-            document.addEventListener('click', unmuteVideo);
-            document.addEventListener('touchstart', unmuteVideo);
+            // Bind to whole document to ensure it captures
+            document.addEventListener('click', startExperience);
+            document.addEventListener('touchstart', startExperience);
         });
     </script>
 </body>
