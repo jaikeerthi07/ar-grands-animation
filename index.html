@@ -53,21 +53,6 @@
             </div>
         </main>
 
-        <!-- Audio Control -->
-        <button id="audio-toggle" class="audio-btn fade-in delay-2" aria-label="Unmute Video">
-            <svg id="icon-muted" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <line x1="23" y1="9" x2="17" y2="15"></line>
-                <line x1="17" y1="9" x2="23" y2="15"></line>
-            </svg>
-            <svg id="icon-unmuted" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-            <span>Tap to Unmute</span>
-        </button>
     </div>
 
     <!-- JS for simple interactions -->
@@ -79,25 +64,28 @@
             }, 100);
 
             const video = document.getElementById('bg-video');
-            const audioBtn = document.getElementById('audio-toggle');
-            const iconMuted = document.getElementById('icon-muted');
-            const iconUnmuted = document.getElementById('icon-unmuted');
-            const audioText = audioBtn.querySelector('span');
 
-            audioBtn.addEventListener('click', () => {
-                if (video.muted) {
-                    video.muted = false;
-                    iconMuted.style.display = 'none';
-                    iconUnmuted.style.display = 'block';
-                    audioText.innerText = 'Mute';
-                    video.play();
-                } else {
+            // Attempt to unmute immediately!
+            video.muted = false;
+            let playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    // Autoplay was blocked natively. Fall back to muted autoplay.
                     video.muted = true;
-                    iconMuted.style.display = 'block';
-                    iconUnmuted.style.display = 'none';
-                    audioText.innerText = 'Tap to Unmute';
-                }
-            });
+                    video.play();
+                });
+            }
+
+            // Unmute instantly upon any screen touch or click as per mobile security policies
+            const unmuteVideo = () => {
+                video.muted = false;
+                video.play();
+                document.removeEventListener('click', unmuteVideo);
+                document.removeEventListener('touchstart', unmuteVideo);
+            };
+
+            document.addEventListener('click', unmuteVideo);
+            document.addEventListener('touchstart', unmuteVideo);
         });
     </script>
 </body>
