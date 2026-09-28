@@ -99,7 +99,7 @@
 
 <body>
     <video id="bg-video" autoplay muted playsinline webkit-playsinline preload="auto">
-        <source src="baby animate1.mp4" type="video/mp4">
+        <source src="baby_animate1.mp4" type="video/mp4">
     </video>
 
     <div id="interaction-overlay">
@@ -131,10 +131,15 @@
 
             // Master interaction handler
             const startExperience = () => {
-                // Instantly unleash video & audio
                 video.muted = false;
-                video.currentTime = 0; // Restart from frame 0 to guarantee they don't miss anything!
-                video.play();
+
+                let playAttempt = video.play();
+                if (playAttempt !== undefined) {
+                    playAttempt.catch(e => {
+                        console.error("Playback error:", e);
+                        alert("Please ensure your device allows video playback.");
+                    });
+                }
 
                 // Remove overlay
                 overlay.style.opacity = '0';
