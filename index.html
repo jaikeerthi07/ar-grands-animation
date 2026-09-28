@@ -142,12 +142,12 @@
 
                 // Cleanup listeners
                 document.removeEventListener('click', startExperience);
-                document.removeEventListener('touchstart', startExperience);
+                document.removeEventListener('touchend', startExperience);
             };
 
             // Bind to whole document to ensure it captures
             document.addEventListener('click', startExperience);
-            document.addEventListener('touchstart', startExperience);
+            document.addEventListener('touchend', startExperience);
         });
     </script>
 </body>
